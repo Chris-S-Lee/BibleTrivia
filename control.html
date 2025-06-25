@@ -1,0 +1,70 @@
+<!-- public/control.html -->
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>조작 화면</title>
+	</head>
+	<body>
+		<h1>조작용 점수판</h1>
+		<table id="scoreboard">
+			<thead>
+				<tr>
+					<th>순위</th>
+					<th>팀 이름</th>
+					<th>점수</th>
+					<th>조작</th>
+				</tr>
+			</thead>
+			<tbody id="scoreBody"></tbody>
+		</table>
+
+		<script>
+			let teams = [];
+
+			function renderTable() {
+				teams.sort((a, b) => b.score - a.score);
+				const tbody = document.getElementById("scoreBody");
+				tbody.innerHTML = "";
+
+				let prevScore = null;
+				let displayRank = 0;
+
+				teams.forEach((team, index) => {
+					if (team.score !== prevScore) {
+						displayRank = index + 1;
+						prevScore = team.score;
+					}
+					const row = document.createElement("tr");
+					row.innerHTML = `
+					<td>${displayRank}</td>
+					<td>${team.name}</td>
+					<td>${team.score}</td>
+					<td>
+						<button onclick="addScore(${index}, 5)">+5</button>
+						<button onclick="addScore(${index}, 10)">+10</button>
+					</td>
+				`;
+					tbody.appendChild(row);
+				});
+			}
+
+			async function fetchTeams() {
+				const res = await fetch("/api/teams");
+				teams = await res.json();
+				renderTable();
+			}
+
+			async function addScore(index, points) {
+				await fetch(`/api/teams/${index}/add`, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ points }),
+				});
+				await fetchTeams();
+			}
+
+			fetchTeams();
+		</script>
+	</body>
+</html>
