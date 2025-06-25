@@ -45,7 +45,6 @@ table {
 	-webkit-backdrop-filter: blur(14px);
 	border: 2px solid;
 	border-image: linear-gradient(135deg, #00aaff, #8f00ff) 1; /* 그라데이션 테두리 */
-	margin-bottom: 40px;
 	transition: all 0.3s ease-in-out;
 }
 
