@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>조작 화면</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<h1>조작용 점수판</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>순위</th>
+					<th>팀 이름</th>
+					<th>점수</th>
+					<th>조작</th>
+				</tr>
+			</thead>
+			<tbody id="scoreBody"></tbody>
+		</table>
+
+		<script>
+			const socket = io();
+			let teams = [];
+
+			socket.on("scoreUpdated", (data) => {
+				teams = data.teams;
+				renderTable();
+			});
+
+			async function fetchInitial() {
+				const res = await fetch("/api/teams");
+				teams = await res.json();
+				renderTable();
+			}
+
+			function renderTable() {
+				// 가나다순 정렬
+				const sortedByName = [...teams].sort((a, b) => a.name.localeCompare(b.name, "ko"));
+
+				// 점수 기준 순위 매핑 생성
+				const sortedByScore = [...teams].sort((a, b) => b.score - a.score);
+				let rankMap = {};
+				let currentRank = 0;
+				let prevScore = null;
+				sortedByScore.forEach((team, index) => {
+					if (team.score !== prevScore) {
+						currentRank = index + 1;
+						prevScore = team.score;
+					}
+					rankMap[team.name] = currentRank;
+				});
+
+				const tbody = document.getElementById("scoreBody");
+				tbody.innerHTML = "";
+
+				sortedByName.forEach((team) => {
+					const rank = rankMap[team.name];
+
+					const row = document.createElement("tr");
+
+					// 배경 색 적용 (점수 순위 기준)
+					if (team.score === 0) {
+						row.classList.add("default");
+					} else if (rank === 1) {
+						row.classList.add("gold");
+					} else if (rank === 2) {
+						row.classList.add("silver");
+					} else if (rank === 3) {
+						row.classList.add("bronze");
+					}
+
+					row.innerHTML = `
+            <td>${rank}</td>
+            <td>${team.name}</td>
+            <td class="score-cell">${team.score}</td>
+            <td>
+              <button onclick="addScore('${team.name}', 5)">+5</button>
+              <button onclick="addScore('${team.name}', 10)">+10</button>
+            </td>
+          `;
+
+					tbody.appendChild(row);
+				});
+			}
+
+			async function addScore(name, points) {
+				await fetch("/api/teams/add", {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({ name, points }),
+				});
+			}
+
+			fetchInitial();
+		</script>
+	</body>
+</html>

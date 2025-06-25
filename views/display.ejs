@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+	<head>
+		<meta charset="UTF-8" />
+		<title>표시 화면</title>
+		<link rel="stylesheet" href="/styles.css" />
+		<script src="/socket.io/socket.io.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+	</head>
+	<body>
+		<h1>2025 Bible Trivia</h1>
+		<table>
+			<thead>
+				<tr>
+					<th>순위</th>
+					<th>팀 이름</th>
+					<th>점수</th>
+				</tr>
+			</thead>
+			<tbody id="scoreBody"></tbody>
+		</table>
+
+		<script>
+			const socket = io();
+			let changedTeamName = null;
+
+			socket.on("scoreUpdated", (data) => {
+				const teams = data.teams;
+				changedTeamName = data.changedTeam;
+				renderTable(teams);
+			});
+
+			async function fetchInitialTeams() {
+				const res = await fetch("/api/teams");
+				const teams = await res.json();
+				renderTable(teams);
+			}
+
+			let rowRefs = {};
+			let oldRects = {};
+
+			function renderTable(teams) {
+				const sortedTeams = [...teams].sort((a, b) => {
+					if (b.score !== a.score) return b.score - a.score;
+					if (a.name === changedTeamName) return 1;
+					if (b.name === changedTeamName) return -1;
+					return 0;
+				});
+
+				// 순위 계산
+				const rankMap = {};
+				let currentRank = 0;
+				let prevScore = null;
+				sortedTeams.forEach((team, index) => {
+					if (team.score !== prevScore) {
+						currentRank = index + 1;
+						prevScore = team.score;
+					}
+					rankMap[team.name] = currentRank;
+				});
+
+				const tbody = document.getElementById("scoreBody");
+
+				// 기존 위치 저장
+				oldRects = {};
+				for (const [name, row] of Object.entries(rowRefs)) {
+					if (row && row.getBoundingClientRect) {
+						oldRects[name] = row.getBoundingClientRect();
+					}
+				}
+
+				tbody.innerHTML = "";
+				rowRefs = {};
+
+				sortedTeams.forEach((team) => {
+					const rank = rankMap[team.name];
+					const row = document.createElement("tr");
+
+					if (team.score === 0) {
+						row.classList.add("default");
+					} else if (rank === 1) {
+						row.classList.add("gold");
+					} else if (rank === 2) {
+						row.classList.add("silver");
+					} else if (rank === 3) {
+						row.classList.add("bronze");
+					}
+
+					row.innerHTML = `
+        <td>${rank}</td>
+        <td>${team.name}</td>
+        <td class="score-cell">${team.score}</td>
+      `;
+
+					rowRefs[team.name] = row;
+					tbody.appendChild(row);
+				});
+
+				// 애니메이션 조건: 점수 변경 + 실제 위치 변화 있을 때만
+				sortedTeams.forEach((team) => {
+					const row = rowRefs[team.name];
+					const old = oldRects[team.name];
+					const current = row.getBoundingClientRect();
+
+					if (team.name === changedTeamName && old && Math.abs(current.top - old.top) > 1) {
+						const dy = old.top - current.top;
+
+						gsap.fromTo(
+							row,
+							{ y: dy, scale: 1 },
+							{
+								y: 0,
+								scale: 1,
+								duration: 0.6,
+								ease: "power2.out",
+								onStart: () => {
+									gsap.fromTo(row, { scale: 1 }, { scale: 1.08, duration: 0.25, yoyo: true, repeat: 1 });
+								},
+							}
+						);
+					}
+				});
+
+				changedTeamName = null;
+			}
+
+			fetchInitialTeams();
+		</script>
+	</body>
+</html>
