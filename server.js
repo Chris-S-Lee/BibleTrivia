@@ -18,6 +18,14 @@ app.get("/api/teams", (req, res) => {
 	res.json(teams);
 });
 
+app.get("/display", (req, res) => {
+	res.render("display");
+});
+
+app.get("/control", (req, res) => {
+	res.render("control");
+});
+
 // 점수 추가
 app.post("/api/teams/:index/add", (req, res) => {
 	const index = parseInt(req.params.index);
