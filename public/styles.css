@@ -36,7 +36,6 @@ h1 {
 /* 점수판 */
 table {
 	width: 85%;
-	min-height: 900px;
 	border-collapse: collapse;
 	border-radius: 20px;
 	overflow: hidden;
