@@ -10,7 +10,19 @@ const io = socketIo(server);
 
 const port = 8080;
 
-let teams = ["석다정", "조케이든", "모예찬", "김효주", "김규진", "이서현", "정승민", "윤예진", "이승언", "임예현", "김준우"].map((name) => ({
+let teams = [
+	"석다정 DAJEONG SEOK",
+	"조케이든 CAYDEN CHO",
+	"모예찬 YECHAN MO",
+	"김효주 HYOJU KIM",
+	"김규진 KYUJIN KIM",
+	"이서현 SEOHYUN LEE",
+	"정승민 SEUNGMIN JUNG",
+	"윤예진 YEJIN YOON",
+	"이승언 SEUNGEON LEE",
+	"임예현 YEHYUN LIM",
+	"김준우 JUNWOO KIM",
+].map((name) => ({
 	name,
 	score: 0,
 }));
@@ -24,6 +36,10 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 // 페이지 라우팅
+app.get("/", (req, res) => {
+	res.render("index");
+});
+
 app.get("/display", (req, res) => {
 	res.render("display");
 });

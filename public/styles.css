@@ -36,6 +36,7 @@ h1 {
 /* 점수판 */
 table {
 	width: 85%;
+	min-height: 900px;
 	border-collapse: collapse;
 	border-radius: 20px;
 	overflow: hidden;
@@ -43,7 +44,6 @@ table {
 	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
 	backdrop-filter: blur(14px);
 	-webkit-backdrop-filter: blur(14px);
-	border: 2px solid;
 	border-image: linear-gradient(135deg, #00aaff, #8f00ff) 1; /* 그라데이션 테두리 */
 	transition: all 0.3s ease-in-out;
 }
@@ -60,7 +60,7 @@ th {
 	background-color: rgba(0, 40, 90, 0.4);
 	color: #f8f8f8;
 	font-weight: 700;
-	font-size:24px;
+	font-size: 24px;
 	text-transform: uppercase;
 	border-bottom: 2px solid #f5c542; /* 골드 하이라이트 */
 }
@@ -74,7 +74,7 @@ th {
 }
 .silver {
 	/* background-color: rgba(2, 236, 253, 0.911); */
-	background-color: #0d8aff98;
+	background-color: #0d8affb9;
 	color: #ffffff;
 	font-weight: bold;
 }
