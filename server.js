@@ -3,29 +3,47 @@ const http = require("http");
 const socketIo = require("socket.io");
 const cors = require("cors");
 const path = require("path");
-
 const app = express();
 const server = http.createServer(app);
 const io = socketIo(server);
+app.use(express.json()); // ✅ JSON 파싱 미들웨어
+app.use(express.urlencoded({ extended: true })); // 폼 데이터 파싱
 
 const port = 8080;
 
+// 팀 초기화
 let teams = [
-	"석다정 DAJEONG SEOK",
-	"조케이든 CAYDEN CHO",
-	"모예찬 YECHAN MO",
-	"김효주 HYOJU KIM",
-	"김규진 KYUJIN KIM",
-	"이서현 SEOHYUN LEE",
-	"정승민 SEUNGMIN JUNG",
-	"윤예진 YEJIN YOON",
-	"이승언 SEUNGEON LEE",
-	"임예현 YEHYUN LIM",
-	"김준우 JUNWOO KIM",
+  "석다정 DAJEONG SEOK",
+  "조케이든 CAYDEN CHO",
+  "모예찬 YECHAN MO",
+  "김효주 HYOJU KIM",
+  "김규진 KYUJIN KIM",
+  "이서현 SEOHYUN LEE",
+  "정승민 SEUNGMIN JUNG",
+  "윤예진 YEJIN YOON",
+  "이승언 SEUNGEON LEE",
+  "임예현 YEHYUN LIM",
+  "김준우 JUNWOO KIM",
 ].map((name) => ({
-	name,
-	score: 0,
+  name,
+  q: 0,
+  t: 0,
+  f: 0,
 }));
+
+// 점수 추가 API (1점 단위, 항목 지정)
+app.post("/api/teams/add", (req, res) => {
+  const { name, field, points } = req.body;
+  const team = teams.find((t) => t.name === name);
+  if (!team || !["q", "t", "f"].includes(field)) {
+    return res.status(400).json({ error: "Invalid input" });
+  }
+
+  team[field] += points;
+  io.emit("scoreUpdated", { teams, changedTeam: name });
+  res.json({ success: true });
+});
+
 
 app.use(cors());
 app.use(express.json());
