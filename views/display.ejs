@@ -5,21 +5,27 @@
   <title>표시 화면</title>
   <link rel="stylesheet" href="/styles.css" />
   <script src="/socket.io/socket.io.js"></script>
+  <style>
+    table th:first-child,
+    table td:first-child {
+    visibility: hidden;
+    }
+  </style>
 </head>
 <body>
   <h1>2025 SS ALPHA CONFERENCE</h1>
   <table>
-    <colgroup>
-      <col style="width: 10%;" />  <!-- Rank -->
-      <col style="width: 50%;" />  <!-- QTF 이름 -->
-      <col style="width: 13%;" />  <!-- Q -->
-      <col style="width: 13%;" />  <!-- T -->
-      <col style="width: 13%;" />  <!-- F -->
-    </colgroup>
+  <colgroup>
+    <col style="width: 0%;" />  <!-- Rank 숨김 -->
+    <col style="width: 57%;" />  <!-- QTF 이름 -->
+    <col style="width: 15%;" />  <!-- Q -->
+    <col style="width: 14%"/>  <!-- T -->
+    <col style="width: 14%"/>  <!-- F -->
+  </colgroup>
     <thead>
       <tr>
         <th>Rank</th>
-        <th>QTF</th>
+        <th>ALPHA</th>
         <th>Best ALPHA</th>
         <th>Best ACADEMIC</th>
         <th>Best CHALLENGING</th>
