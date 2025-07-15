@@ -13,17 +13,26 @@ const port = 8080;
 
 // 팀 초기화
 let teams = [
-  "석다정 DAJEONG SEOK",
-  "조케이든 CAYDEN CHO",
-  "모예찬 YECHAN MO",
-  "김효주 HYOJU KIM",
-  "김규진 KYUJIN KIM",
-  "이서현 SEOHYUN LEE",
-  "정승민 SEUNGMIN JUNG",
-  "윤예진 YEJIN YOON",
-  "이승언 SEUNGEON LEE",
-  "임예현 YEHYUN LIM",
-  "김준우 JUNWOO KIM",
+  "Case by Case",
+  "H2O",
+  "God Hand",
+  "Prod. God",
+  "선교 감영병 Now",
+  "마인드브릿지",
+  "Supernova",
+  "오감자",
+  "La Ruelle",
+  "ZZzzzapening",
+  "요리보고 조리보고 둘리번 둘리번",
+  "띠부피부",
+  "동물을 11(구)하라!",
+  "Crime in all of the Earth",
+  "Onlight",
+  "극 I 탈출 프로젝트",
+  "Brand New Warri",
+  "PD Team",
+  "포옹법",
+  "영신"
 ].map((name) => ({
   name,
   q: 0,
@@ -66,19 +75,6 @@ app.get("/control", (req, res) => {
 	res.render("control");
 });
 
-// 점수 추가 API
-app.post("/api/teams/add", (req, res) => {
-	const { name, points } = req.body;
-	const team = teams.find((t) => t.name === name);
-	if (!team) return res.status(400).json({ error: "Invalid team name" });
-
-	team.score += points;
-
-	// 변경된 팀명과 전체 팀 데이터 전송
-	io.emit("scoreUpdated", { teams, changedTeam: name });
-
-	res.json({ success: true });
-});
 
 // 초기 점수 데이터 요청 (필요 시)
 app.get("/api/teams", (req, res) => {

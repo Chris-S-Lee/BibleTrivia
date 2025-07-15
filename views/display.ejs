@@ -5,144 +5,92 @@
   <title>표시 화면</title>
   <link rel="stylesheet" href="/styles.css" />
   <script src="/socket.io/socket.io.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 </head>
 <body>
   <h1>2025 SS ALPHA CONFERENCE</h1>
   <table>
-		<colgroup>
-			<col style="width: 10%;" />  <!-- Rank -->
-			<col style="width: 50%;" /> <!-- QTF 이름 (좁게) -->
-			<col style="width: 10%;" />  <!-- Q -->
-			<col style="width: 10%;" />  <!-- T -->
-			<col style="width: 10%;" />  <!-- F -->
-			<col style="width: 10%;" />  <!-- Total -->
-		</colgroup>
+    <colgroup>
+      <col style="width: 10%;" />  <!-- Rank -->
+      <col style="width: 50%;" />  <!-- QTF 이름 -->
+      <col style="width: 13%;" />  <!-- Q -->
+      <col style="width: 13%;" />  <!-- T -->
+      <col style="width: 13%;" />  <!-- F -->
+    </colgroup>
     <thead>
       <tr>
         <th>Rank</th>
         <th>QTF</th>
-        <th>Q</th>
-        <th>T</th>
-        <th>F</th>
-        <th>Total</th>
+        <th>Best ALPHA</th>
+        <th>Best ACADEMIC</th>
+        <th>Best CHALLENGING</th>
       </tr>
     </thead>
     <tbody id="scoreBody"></tbody>
   </table>
+<script>
+  const socket = io();
 
-  <script>
-    const socket = io();
-    let changedTeamName = null;
+  socket.on("scoreUpdated", (data) => {
+    const teams = data.teams;
+    renderTable(teams);
+  });
 
-    socket.on("scoreUpdated", (data) => {
-      const teams = data.teams;
-      changedTeamName = data.changedTeam;
-      renderTable(teams);
+  async function fetchInitialTeams() {
+    const res = await fetch("/api/teams");
+    const teams = await res.json();
+    renderTable(teams);
+  }
+
+  function renderTable(teams) {
+    // 항목별 최고 점수 계산
+    const maxQ = Math.max(...teams.map(t => t.q));
+    const maxT = Math.max(...teams.map(t => t.t));
+    const maxF = Math.max(...teams.map(t => t.f));
+
+    // 순위 계산: q 기준
+    const sortedByQ = [...teams].sort((a, b) => b.q - a.q);
+    const rankMap = {};
+    let currentRank = 0;
+    let prevQ = null;
+
+    sortedByQ.forEach((team, index) => {
+      if (team.q !== prevQ) {
+        currentRank = index + 1;
+        prevQ = team.q;
+      }
+      rankMap[team.name] = currentRank;
     });
 
-    async function fetchInitialTeams() {
-      const res = await fetch("/api/teams");
-      const teams = await res.json();
-      renderTable(teams);
-    }
+    // 이름순으로 렌더링
+    const sortedByName = [...teams].sort((a, b) => a.name.localeCompare(b.name, "ko"));
+    const tbody = document.getElementById("scoreBody");
+    tbody.innerHTML = "";
 
-    let rowRefs = {};
-    let oldRects = {};
+    sortedByName.forEach((team) => {
+      const rank = rankMap[team.name];
 
-    function renderTable(teams) {
-      const sortedTeams = [...teams].sort((a, b) => {
-        const totalB = b.q + b.t + b.f;
-        const totalA = a.q + a.t + a.f;
-        if (totalB !== totalA) return totalB - totalA;
-        if (a.name === changedTeamName) return 1;
-        if (b.name === changedTeamName) return -1;
-        return 0;
-      });
+      // 조건: 최고 점수 + 0점이 아닌 경우에만 색상 적용
+      const qClass = team.q === maxQ && maxQ > 0 ? "alpha-top" : "";
+      const tClass = team.t === maxT && maxT > 0 ? "academic-top" : "";
+      const fClass = team.f === maxF && maxF > 0 ? "challenging-top" : "";
 
-      const rankMap = {};
-      let currentRank = 0;
-      let prevTotal = null;
+      const row = document.createElement("tr");
+      row.classList.add("default"); // 전체 행 기본색
 
-      sortedTeams.forEach((team, index) => {
-        const total = team.q + team.t + team.f;
-        if (total !== prevTotal) {
-          currentRank = index + 1;
-          prevTotal = total;
-        }
-        rankMap[team.name] = currentRank;
-      });
+      row.innerHTML = `
+        <td>${rank}</td>
+        <td>${team.name}</td>
+        <td class="${qClass}">${team.q}</td>
+        <td class="${tClass}">${team.t}</td>
+        <td class="${fClass}">${team.f}</td>
+      `;
 
-      const tbody = document.getElementById("scoreBody");
+      tbody.appendChild(row);
+    });
+  }
 
-      oldRects = {};
-      for (const [name, row] of Object.entries(rowRefs)) {
-        if (row && row.getBoundingClientRect) {
-          oldRects[name] = row.getBoundingClientRect();
-        }
-      }
+  fetchInitialTeams();
+</script>
 
-      tbody.innerHTML = "";
-      rowRefs = {};
-
-      sortedTeams.forEach((team) => {
-        const rank = rankMap[team.name];
-        const total = team.q + team.t + team.f;
-        const row = document.createElement("tr");
-
-        if (total === 0) {
-          row.classList.add("default");
-        } else if (rank === 1) {
-          row.classList.add("gold");
-        } else if (rank === 2) {
-          row.classList.add("silver");
-        } else if (rank === 3) {
-          row.classList.add("bronze");
-        } else {
-          row.classList.add("default");
-        }
-
-        row.innerHTML = `
-          <td>${rank}</td>
-          <td>${team.name}</td>
-          <td>${team.q}</td>
-          <td>${team.t}</td>
-          <td>${team.f}</td>
-          <td class="score-cell">${total}</td>
-        `;
-
-        rowRefs[team.name] = row;
-        tbody.appendChild(row);
-      });
-
-      sortedTeams.forEach((team) => {
-        const row = rowRefs[team.name];
-        const old = oldRects[team.name];
-        const current = row.getBoundingClientRect();
-
-        if (team.name === changedTeamName && old && Math.abs(current.top - old.top) > 1) {
-          const dy = old.top - current.top;
-
-          gsap.fromTo(
-            row,
-            { y: dy, scale: 1 },
-            {
-              y: 0,
-              scale: 1,
-              duration: 0.6,
-              ease: "power2.out",
-              onStart: () => {
-                gsap.fromTo(row, { scale: 1 }, { scale: 1.08, duration: 0.25, yoyo: true, repeat: 1 });
-              },
-            }
-          );
-        }
-      });
-
-      changedTeamName = null;
-    }
-
-    fetchInitialTeams();
-  </script>
 </body>
 </html>

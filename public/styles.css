@@ -24,10 +24,11 @@ body {
 /* 제목 */
 h1 {
 	text-align: center;
-	font-size: 64px;
-	margin: 25px 0;
-	color: #f5c542; /* 골드 계열 */
-	text-shadow: 0 0 15px rgba(189, 152, 49, 0.6);
+	font-size: 56px;
+	margin-top: 25px;
+	margin-bottom: 10px;
+	color: #546883; /* 골드 계열 */
+	text-shadow: 0 0 15px rgba(194, 194, 194, 0.6);
 	letter-spacing: 2px;
 	font-family: "RixYeoljeongdo_Regular";
 }
@@ -76,7 +77,7 @@ td div div{
 }
 
 /* 순위별 색상 */
-.gold {
+/* .gold {
 	background-color: #0936ffd7;
 	color: #ffffff;
 	font-weight: bold;
@@ -90,7 +91,10 @@ td div div{
 	background-color: #00f0fd9f;
 	color: #ffffff;
 	font-weight: bold;
-}
+} */
+.alpha-top { background-color: #ffe066; font-weight: bold; }
+.academic-top { background-color: #a0e7e5; font-weight: bold; }
+.challenging-top { background-color: #ffb3c1; font-weight: bold; }
 .default {
 	background-color: #dbd8d848;
 	color: #ffffff;
